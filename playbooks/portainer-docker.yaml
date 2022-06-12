@@ -1,0 +1,47 @@
+- name: Install Portainer
+  hosts: all
+  become: yes
+  serial: 1
+  tasks:
+    # ####################################
+    # Run container
+    # ####################################
+    - name: Start/Update container
+      docker_container:
+        name: portainer
+        image: "portainer/portainer-ce:2.13.1"
+        pull: yes
+        restart_policy: unless-stopped
+        env:
+          TZ: "{{ timezone }}"
+        labels:
+          traefik.http.routers.portainer.service: "portainer"
+          traefik.http.routers.portainer.rule: "Host(`portainer.{{ local_domain }}`)"
+          traefik.http.routers.portainer.middlewares: "ip-whitelist@file"
+          traefik.http.routers.portainer.entrypoints: "web"
+          traefik.http.services.portainer.loadbalancer.server.port: "9000"
+        published_ports:
+          - "{{ portainer_port }}:9000"
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+          - "/home/{{ ansible_user }}/portainer/:/data"
+        log_driver: json-file
+        log_options:
+          max-size: "10m"
+          max-file: "5"
+    - name: Check container health
+      uri:
+        url: http://localhost:{{ portainer_port }}
+      register: result
+      until: result.status == 200
+      retries: 5
+      delay: 10
+
+    # ####################################
+    # Clear
+    # ####################################
+    - name: Remove old image versions
+      docker_prune:
+        images: yes
+        images_filters:
+          dangling: false

@@ -1,0 +1,27 @@
+all:
+  hosts:
+    pihole-1:
+      ansible_host: 192.168.178.45
+      priority: 101
+    pihole-2:
+      ansible_host: 192.168.178.46
+      priority: 100
+  vars:
+    ansible_user: pi
+    ansible_password: raspberry # only used on first run
+    ansible_python_interpreter: /usr/bin/python3
+    github_user_for_ssh_key: shaderecker
+    timezone: "Europe/Berlin"
+    static_dns: "1.1.1.1"
+    pihole_image: "pihole/pihole:2022.05"
+    pihole_ftl_max_db_days: "180"
+    pihole_webpassword: Intranet # example value, change it and better use ansible-vault
+    pihole_dns: "1.1.1.1;2606:4700:4700::1111"
+    pihole_rev_server: "true"
+    local_domain: "fritz.box"
+    server_routers_ip: "192.168.178.1"
+    server_cidr: "192.168.178.0/24"
+    pihole_ha_mode: yes
+    server_cidr: "192.168.178.10/24"
+    pihole_vip_ipv6: "fd00::10/64"
+    sync_target: "{{ server_cidr.split('/')[0] }}"

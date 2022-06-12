@@ -1,0 +1,9 @@
+- name: Update pi
+  hosts: all
+  become: yes
+  serial: 1
+  roles:
+    - stop_keepalived
+    - updates
+    - pihole
+    - start_keepalived

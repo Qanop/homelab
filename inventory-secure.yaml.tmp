@@ -1,0 +1,19 @@
+all:
+  vars:
+    github_user_for_ssh_key: github_user
+    acme_email: "your@email.com"
+    static_dns: "192.168.1.1"
+    server_routers_ip: "192.168.1.1"
+    server_cidr: "192.168.1.0/24"
+    public_wildcard: "your.domain"
+    shlink_public_fqdn: "shlink.your.domain"
+    local_domain: "lc"
+
+    # PiHole Options
+    pihole_webpassword: "mypass"
+    pihole_dns: "192.168.1.1;62.233.233.233;2606:4700:4700::1111"
+
+    # Shlink
+    geolite_license_key: "token"
+    shlink_database_password: "mypass"
+    shlink_server_api_key: "abc-def-123"

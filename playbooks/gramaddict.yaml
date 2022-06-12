@@ -1,0 +1,37 @@
+- name: Install Android ADB
+  hosts: all
+  become: yes
+  serial: 1
+  tasks:
+    # ####################################
+    # Configuration files
+    # ####################################
+    - name: Set project folder
+      file:
+        state: directory
+        path: /home/{{ ansible_user }}/gramaddict
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        
+    # ####################################
+    # Install dependencies
+    # ####################################
+    - name: Install ADB & QRcode & virtualenv
+      apt:
+        force_apt_get: yes
+        name:
+          - adb
+          - qrencode
+          - python3-virtualenv
+        install_recommends: yes
+
+    # - name: Install GramAddict requirements
+    #   pip: 
+    #     name: GramAddict
+    #     virtualenv: /home/{{ ansible_user }}/gramaddict/.venv
+    # 
+    # - name: Copy config files
+    #   copy:
+    #     dest: /home/{{ ansible_user }}/gramaddict/app
+    #     src: ../backups-and-confs/gramaddict/
+    #     mode: 0755

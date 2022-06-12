@@ -1,0 +1,48 @@
+- name: Install Wireguard
+  hosts: all
+  become: yes
+  serial: 1
+  tasks:
+    # ####################################
+    # Run container
+    # ####################################
+    - name: Start/Update container
+      docker_container:
+        name: wireguard
+        image: "linuxserver/wireguard"
+        pull: yes
+        restart_policy: unless-stopped
+        env:
+          TZ: "{{ timezone }}"
+          PUID: "1000"
+          PGID: "1000"
+          SERVERURL: "wireguard.{{ public_wildcard }}"
+          SERVERPORT: "51820"
+          PEERS: "1"
+          PEERDNS: "{{ static_dns }}"
+          INTERNAL_SUBNET: "10.13.13.0"
+          ALLOWEDIPS: "0.0.0.0/0"
+          LOG_CONFS: "true"
+        capabilities:
+          - "NET_ADMIN"
+          - "SYS_MODULE"
+        sysctls:
+          net.ipv4.conf.all.src_valid_mark: "1"
+        published_ports:
+          - "51820:51820/udp"
+        volumes:
+          - "/home/{{ ansible_user }}/wireguard:/config"
+          - /lib/modules:/lib/modules
+        log_driver: json-file
+        log_options:
+          max-size: "10m"
+          max-file: "5"
+
+    # ####################################
+    # Clear
+    # ####################################
+    - name: Remove old image versions
+      docker_prune:
+        images: yes
+        images_filters:
+          dangling: false

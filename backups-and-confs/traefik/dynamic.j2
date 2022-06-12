@@ -1,0 +1,29 @@
+
+http:
+
+  middlewares:
+    ip-whitelist:
+      ipWhiteList:
+        sourceRange:
+          - "127.0.0.1/32"
+          - "172.17.0.1/32"
+          - "{{ server_cidr }}"
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
+
+  # routers:
+  #   nas-router:
+  #     rule: "Host(`fqdn`)"
+  #     service: "nas-service"
+  #     middlewares:
+  #       - "redirect-to-https"
+  #     tls:
+  #       certResolver: master
+
+  # services:
+  #   nas-service:
+  #     loadBalancer:
+  #     servers:
+  #       - url: "http://local-network:5000"

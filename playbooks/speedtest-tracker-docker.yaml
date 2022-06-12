@@ -1,0 +1,43 @@
+- name: Install Speedtest
+  hosts: all
+  become: yes
+  serial: 1
+  tasks:
+    # ####################################
+    # Run container
+    # ####################################
+    - name: Start/Update container
+      docker_container:
+        name: speedtest
+        image: "henrywhitaker3/speedtest-tracker:latest-arm"
+        pull: yes
+        restart_policy: unless-stopped
+        labels:
+          traefik.http.routers.speedtest.service: "speedtest"
+          traefik.http.routers.speedtest.rule: "Host(`speedtest.{{ local_domain }}`)"
+          traefik.http.routers.speedtest.middlewares: "ip-whitelist@file"
+          traefik.http.routers.speedtest.entrypoints: "web"
+          traefik.http.services.speedtest.loadbalancer.server.port: "80"
+        env:
+          TZ: "{{ timezone }}"
+          OOKLA_EULA_GDPR: "true"
+        dns_servers:
+          - 127.0.0.1
+          - "{{ static_dns }}"
+        published_ports:
+          - "{{ speedtest_port }}:80"
+        volumes:
+          - "/home/{{ ansible_user }}/speedtest/:/config"
+        log_driver: json-file
+        log_options:
+          max-size: "10m"
+          max-file: "5"
+
+    # ####################################
+    # Clear
+    # ####################################
+    - name: Remove old image versions
+      docker_prune:
+        images: yes
+        images_filters:
+          dangling: false

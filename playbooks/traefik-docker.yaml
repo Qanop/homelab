@@ -1,0 +1,79 @@
+- name: Install Traefik
+  hosts: all
+  become: yes
+  serial: 1
+  tasks:
+    # ####################################
+    # Configuration files
+    # ####################################
+    - name: Create config directory
+      file:
+        path:  /home/{{ ansible_user }}/traefik
+        state: directory
+    - name: Create acme.json
+      file:
+        path: /home/{{ ansible_user }}/traefik/acme.json
+        state: touch
+        mode: 0600
+    - name: Template dynamic.yml config
+      template:
+        dest: /home/{{ ansible_user }}/traefik/dynamic.yml
+        src: ../backups-and-confs/traefik/dynamic.j2
+        mode: 0777
+    - name: Template traefik.yml config
+      template:
+        dest: /home/{{ ansible_user }}/traefik/traefik.yml
+        src: ../backups-and-confs/traefik/traefik.j2
+        mode: 0777
+        
+    # ####################################
+    # Run container
+    # ####################################
+    - name: Start/Update container
+      docker_container:
+        name: traefik
+        image: "traefik:v2.6.1"
+        pull: yes
+        restart_policy: unless-stopped
+        labels:
+          traefik.http.routers.traefik.service: "traefik"
+          traefik.http.routers.traefik.rule: "Host(`traefik.{{ local_domain }}`)"
+          traefik.http.routers.traefik.middlewares: "ip-whitelist@file"
+          traefik.http.routers.traefik.entrypoints: "web"
+          traefik.http.services.traefik.loadbalancer.server.port: "8080"
+        etc_hosts:
+          host.docker.internal: "172.17.0.1"
+        env:
+          TZ: "{{ timezone }}"
+        published_ports:
+          # The HTTP port
+          - "{{ traefik_http }}:80"
+          - "{{ traefik_https }}:443"
+          # The Web UI (enabled by --api.insecure=true)
+          - "{{ traefik_http_ui }}:8080"
+        volumes:
+          # So that traefik can listen to the Docker events
+          - "/var/run/docker.sock:/var/run/docker.sock"
+          - "/home/{{ ansible_user }}/traefik/traefik.yml:/etc/traefik/traefik.yml"
+          - "/home/{{ ansible_user }}/traefik/dynamic.yml:/etc/traefik/dynamic.yml"
+          - "/home/{{ ansible_user }}/traefik/acme.json:/etc/traefik/acme.json"
+        log_driver: json-file
+        log_options:
+          max-size: "10m"
+          max-file: "5"
+    - name: Check container health
+      uri:
+        url: http://localhost:{{ traefik_http_ui }}
+      register: result
+      until: result.status == 200
+      retries: 5
+      delay: 10
+
+    # ####################################
+    # Clear
+    # ####################################
+    - name: Remove old image versions
+      docker_prune:
+        images: yes
+        images_filters:
+          dangling: false

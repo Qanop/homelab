@@ -1,0 +1,36 @@
+all:
+  hosts:
+    homeserver:
+      ansible_host: 192.168.100.99
+      priority: 101
+  vars:
+    ansible_user: pi
+    ansible_password: raspberry # only used on first run
+    ansible_python_interpreter: /usr/bin/python3
+    rpi_swap_size: 2048
+    rpi_swap_reboot: no # change for first time settings
+
+    # PiHole Options
+    pihole_image: "pihole/pihole:2022.05"
+    pihole_ftl_max_db_days: "180"
+    pihole_rev_server: "true"
+    pihole_ha_mode: no
+    pihole_vip_ipv6: "fd00::10/64"
+    sync_target: "{{ server_cidr.split('/')[0] }}"
+
+    # App ports
+    home_assistant_port: "8123"
+    pihole_port: "8200"
+    heimdall_port: "8300"
+    rpi_monitor_port: "8400"
+    portainer_port: "8600"
+    speedtest_port: "8700"
+
+    # Shlink ports
+    shlink_port: "8500"
+    shlink_client_port: "8550"
+
+    # Traefik ports
+    traefik_http: "80"
+    traefik_https: "443"
+    traefik_http_ui: "8080"
