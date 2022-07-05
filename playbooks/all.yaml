@@ -16,3 +16,4 @@
 - import_playbook: speedtest-tracker-docker.yaml
 - import_playbook: traefik-docker.yaml
 - import_playbook: wireguard-docker.yaml
+- import_playbook: scrumpoker-docker.yaml

@@ -7,6 +7,7 @@ all:
     ansible_user: pi
     ansible_password: raspberry # only used on first run
     ansible_python_interpreter: /usr/bin/python3
+    timezone: "Europe/Berlin"
     rpi_swap_size: 2048
     rpi_swap_reboot: no # change for first time settings
 
@@ -25,6 +26,7 @@ all:
     rpi_monitor_port: "8400"
     portainer_port: "8600"
     speedtest_port: "8700"
+    scrumpoker_port: "8800"
 
     # Shlink ports
     shlink_port: "8500"

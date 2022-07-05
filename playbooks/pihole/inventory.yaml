@@ -22,6 +22,5 @@ all:
     server_routers_ip: "192.168.178.1"
     server_cidr: "192.168.178.0/24"
     pihole_ha_mode: yes
-    server_cidr: "192.168.178.10/24"
     pihole_vip_ipv6: "fd00::10/64"
     sync_target: "{{ server_cidr.split('/')[0] }}"

@@ -61,3 +61,6 @@ traefik:
 
 wireguard:
 	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/wireguard-docker.yaml
+
+scrumpoker:
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/scrumpoker-docker.yaml

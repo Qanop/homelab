@@ -1,0 +1,57 @@
+- name: Install Scrum Poker
+  hosts: all
+  become: yes
+  serial: 1
+  tasks:
+    # ####################################
+    # Scrum Poker
+    # ####################################
+    - name: Start/Update Scrum Poker container
+      docker_container:
+        name: scrumpoker
+        image: "hbertsch/scrum-poker:latest"
+        pull: yes
+        restart_policy: unless-stopped
+        labels:
+          traefik.http.routers.scrumpoker.service: "scrumpoker"
+          traefik.http.routers.scrumpoker.rule: "Host(`scrumpoker.{{ local_domain }}`)"
+          traefik.http.routers.scrumpoker.middlewares: "ip-whitelist@file"
+          traefik.http.routers.scrumpoker.entrypoints: "web"
+          traefik.http.services.scrumpoker.loadbalancer.server.port: "3000"
+
+          # Push to public
+          traefik.http.routers.scrumpoker-http.service: "scrumpoker"
+          traefik.http.routers.scrumpoker-http.rule: "Host(`{{ scrumpoker_public_fqdn }}`)"
+          traefik.http.routers.scrumpoker-http.middlewares: "redirect-to-https@file"
+          traefik.http.routers.scrumpoker-http.entrypoints: "web"
+
+          traefik.http.routers.scrumpoker-secure.service: "scrumpoker"
+          traefik.http.routers.scrumpoker-secure.rule: "Host(`{{ scrumpoker_public_fqdn }}`)"
+          traefik.http.routers.scrumpoker-secure.tls: "true"
+          traefik.http.routers.scrumpoker-secure.tls.certresolver: "master"
+          traefik.http.routers.scrumpoker-secure.entrypoints: "websecure"
+        env:
+          TZ: "{{ timezone }}"
+        published_ports:
+          - "{{ scrumpoker_port }}:3000"
+        log_driver: json-file
+        log_options:
+          max-size: "10m"
+          max-file: "5"
+    - name: Check container health
+      uri:
+        url: http://localhost:{{ scrumpoker_port }}
+      register: result
+      until: result.status == 200
+      retries: 5
+      delay: 10
+
+    # ####################################
+    # Clear
+    # ####################################
+    - name: Remove old image versions
+      docker_prune:
+        images: yes
+        images_filters:
+          dangling: false
+    
