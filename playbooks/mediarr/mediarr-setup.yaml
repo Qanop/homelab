@@ -1,0 +1,31 @@
+# ####################################
+# Prepare Mediarr folders
+# ####################################
+- name: Create Mediarr media/movies directory
+  file:
+    path: "{{ mediarr.media_movies_path }}"
+    state: directory
+    recurse: true
+- name: Create Mediarr media/tv directory
+  file:
+    path: "{{ mediarr.media_tv_path }}"
+    state: directory
+    recurse: true
+- name: Create Mediarr media/anime directory
+  file:
+    path: "{{ mediarr.media_anime_path }}"
+    state: directory
+    recurse: true
+- name: Create Mediarr downloads directory
+  file:
+    path: "{{ mediarr.downloads_path }}"
+    state: directory
+    recurse: true
+
+# ####################################
+# Prepare Mediarr docker network
+# ####################################
+- name: Create/Update mediarr docker network
+  docker_network:
+    name: mediarr
+    appends: yes

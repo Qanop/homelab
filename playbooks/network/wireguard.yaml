@@ -9,7 +9,7 @@
     - name: Start/Update container
       docker_container:
         name: wireguard
-        image: "linuxserver/wireguard"
+        image: linuxserver/wireguard
         pull: yes
         restart_policy: unless-stopped
         env:
@@ -39,7 +39,7 @@
           max-file: "5"
 
     # ####################################
-    # Clear
+    # Prune
     # ####################################
     - name: Remove old image versions
       docker_prune:

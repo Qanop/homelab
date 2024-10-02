@@ -9,7 +9,7 @@
     - name: Start/Update container
       docker_container:
         name: speedtest
-        image: "henrywhitaker3/speedtest-tracker:latest-arm"
+        image: henrywhitaker3/speedtest-tracker:latest-arm
         pull: yes
         restart_policy: unless-stopped
         labels:
@@ -34,7 +34,7 @@
           max-file: "5"
 
     # ####################################
-    # Clear
+    # Prune
     # ####################################
     - name: Remove old image versions
       docker_prune:

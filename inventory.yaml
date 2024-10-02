@@ -1,8 +1,14 @@
 all:
   hosts:
-    homeserver:
-      ansible_host: 192.168.100.99
+    rpi:
+      ansible_host: 192.168.1.33
       priority: 101
+    monitoring:
+      ansible_host: 192.168.1.33
+      priority: 100
+    mediarr:
+      ansible_host: 192.168.1.33
+      priority: 99
   vars:
     ansible_user: pi
     ansible_password: raspberry # only used on first run
@@ -12,27 +18,87 @@ all:
     rpi_swap_reboot: no # change for first time settings
 
     # PiHole Options
-    pihole_image: "pihole/pihole:2022.05"
+    pihole_image: "pihole/pihole:2024.07.0"
     pihole_ftl_max_db_days: "180"
     pihole_rev_server: "true"
+    pihole_port: "8200"
     pihole_ha_mode: no
     pihole_vip_ipv6: "fd00::10/64"
     sync_target: "{{ server_cidr.split('/')[0] }}"
 
-    # App ports
-    home_assistant_port: "8123"
-    pihole_port: "8200"
-    heimdall_port: "8300"
-    rpi_monitor_port: "8400"
-    portainer_port: "8600"
-    speedtest_port: "8700"
-    scrumpoker_port: "8800"
+    user:
+      docker_ids: 1000:1000
+      user_id: 1000
+      group_id: 1000
 
-    # Shlink ports
-    shlink_port: "8500"
-    shlink_client_port: "8550"
+    root:
+      docker_ids: 0:0
+      user_id: 0
+      group_id: 0
 
-    # Traefik ports
-    traefik_http: "80"
-    traefik_https: "443"
-    traefik_http_ui: "8080"
+    monitoring:
+      prometheus:
+        enabled: true
+        port: 9090
+      grafana:
+        enabled: true
+        port: 8900
+
+    mediarr:
+      downloads_path: /mnt/m2/homelab/downloads
+      media_movies_path: /mnt/m2/homelab/media/movies
+      media_tv_path: /mnt/m2/homelab/media/tv
+      media_anime_path: /mnt/m2/homelab/media/anime
+      jellyseerr:
+        enabled: true
+        port: 5055
+      radarr:
+        enabled: true
+        port: 7878
+      sonarr:
+        enabled: true
+        port: 8989
+      prowlarr:
+        enabled: true
+        port: 9696
+      flaresolverr:
+        enabled: true
+        port: 8191
+      jellyfin:
+        enabled: true
+        port: 8096
+      qbittorrent:
+        enabled: true
+        port: 8090
+
+    mounts:
+      nas:
+        enabled: false
+        src: //192.168.100.20/drive
+      m2:
+        enabled: true
+        src: /dev/sda2
+
+    rclone:
+      b2: true
+      onedrive: false
+
+    network:
+      portainer:
+        enabled: true
+        port: 8600
+      traefik:
+        enabled: true
+        http: 80
+        https: 443
+        http_ui: 8080
+      pihole:
+        enabled: false
+      speedtest:
+        enabled: false
+        port: 8700
+
+    automation:
+      home-assistant:
+        enabled: false
+        port: 8123

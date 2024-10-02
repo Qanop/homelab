@@ -1,0 +1,113 @@
+- name: Install Prometheus
+  hosts: monitoring
+  become: yes
+  serial: 1
+  tasks:
+    # ####################################
+    # Prepare files
+    # ####################################
+    - name: Create config directory
+      file:
+        path:  /home/{{ ansible_user }}/docker_configs/prometheus
+        state: directory
+    - name: Template prometheus.yml config
+      template:
+        dest: /home/{{ ansible_user }}/docker_configs/prometheus/prometheus.yml
+        src: ../backups-and-confs/prometheus/prometheus.yml.j2
+        mode: 0777
+
+    # ####################################
+    # Run container
+    # ####################################
+    - name: Create/Update monitoring docker network
+      docker_network:
+        name: monitoring
+        appends: yes
+    - name: Start/Update container
+      when: monitoring.prometheus.enabled == true
+      docker_container:
+        name: prometheus
+        image: prom/prometheus:v2.54.1
+        pull: yes
+        restart_policy: unless-stopped
+        env:
+          TZ: "{{ timezone }}"
+        labels:
+          traefik.http.routers.prometheus.service: "prometheus"
+          traefik.http.routers.prometheus.rule: "Host(`prometheus.{{ local_domain }}`)"
+          traefik.http.routers.prometheus.middlewares: "ip-whitelist@file"
+          traefik.http.routers.prometheus.entrypoints: "web"
+          traefik.http.services.prometheus.loadbalancer.server.port: "9090"
+        command:
+          - "--config.file=/etc/prometheus/prometheus.yml"
+          - "--storage.tsdb.path=/prometheus"
+          - "--web.console.libraries=/etc/prometheus/console_libraries"
+          - "--web.console.templates=/etc/prometheus/consoles"
+          - "--web.enable-lifecycle"
+          - "--storage.tsdb.retention.time=7d"
+          - "--storage.tsdb.allow-overlapping-blocks"
+        volumes:
+          - "/home/{{ ansible_user }}/docker_configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml"
+          - "prometheus_data:/prometheus"
+        log_driver: json-file
+        dns_servers:
+          - "127.0.0.1"
+          - "{{ static_dns }}"
+        networks:
+          - name: monitoring
+            aliases:
+              - prometheus
+        published_ports:
+          - "{{ monitoring.prometheus.port }}:9090"
+        log_options:
+          max-size: "10m"
+          max-file: "3"
+
+    - name: Check container health
+      uri:
+        url: http://localhost:{{ monitoring.prometheus.port }}/-/healthy
+      register: result
+      until: result.status == 200
+      retries: 5
+      delay: 10
+
+    # ####################################
+    # node-exporter
+    # ####################################
+    - name: Start/Update node-exporter container
+      when: monitoring.prometheus.enabled == true
+      docker_container:
+        name: node-exporter
+        image: prom/node-exporter:latest
+        pull: yes
+        restart_policy: unless-stopped
+        env:
+          TZ: "{{ timezone }}"
+        command:
+          - "--path.procfs=/host/proc"
+          - "--path.rootfs=/rootfs"
+          - "--path.sysfs=/host/sys"
+          - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+        networks:
+          - name: monitoring
+            aliases:
+              - node-exporter
+        exposed_ports:
+          - "9100"
+        volumes:
+          - /proc:/host/proc:ro
+          - /sys:/host/sys:ro
+          - /:/rootfs:ro
+        log_driver: json-file
+        log_options:
+          max-size: 10m
+          max-file: 3
+
+    # ####################################
+    # Prune
+    # ####################################
+    - name: Remove old image versions
+      docker_prune:
+        images: yes
+        images_filters:
+          dangling: false

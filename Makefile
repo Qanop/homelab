@@ -6,14 +6,12 @@ dependencies: dependencies-system dependencies-ansible
 dependencies-ansible:
 	ansible-galaxy collection install ansible.posix
 
-dependencies-system:
+dependencies-system-debian:
 	sudo apt-get install sshpass
 
-# ----------------------------------------------------
-# Run full setup
-# ----------------------------------------------------
-all:
-	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/all.yaml
+dependencies-system-macos:
+	brew install sshpass
+
 
 # ----------------------------------------------------
 # Run ansible PiHole playbooks
@@ -28,39 +26,77 @@ pihole-update: # update apt packages and pihole
 # Run ansible Pi Basic Installs and Settings playbooks
 # ----------------------------------------------------
 pi-swap-settings:
-	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/pi-swap-settings.yaml
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/server-configuration/rpi-swap-settings.yaml
+
+pi-mounts:
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/server-configuration/mounts.yaml
 
 # ----------------------------------------------------
 # Apps
 # ----------------------------------------------------
-dashboard: heimdall
 
 gramaddict:
-	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/gramaddict.yaml
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/other/gramaddict.yaml
 
-heimdall: 
-	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/heimdall-docker.yaml
-
+# ----------------------------------------------------
+# Automation Apps
+# ----------------------------------------------------
 home-assistant:
-	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/home-assistant-docker.yaml
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/automation/home-assistant.yaml
+
+# ----------------------------------------------------
+# Network Apps
+# ----------------------------------------------------
+network:
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/network.yaml
 
 portainer:
-	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/portainer-docker.yaml
-
-rpi-monitor:
-	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/rpi-monitor-docker.yaml
-
-shlink:
-	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/shlink-docker.yaml
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/network/portainer.yaml
 
 speedtest-tracker:
-	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/speedtest-tracker-docker.yaml
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/network/speedtest-tracker.yaml
 
 traefik:
-	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/traefik-docker.yaml
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/network/traefik.yaml
 
 wireguard:
-	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/wireguard-docker.yaml
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/network/wireguard.yaml
 
-scrumpoker:
-	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/scrumpoker-docker.yaml
+# ----------------------------------------------------
+# Monitoring Apps
+# ----------------------------------------------------
+monitoring:
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/monitoring.yaml
+
+prometheus:
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/monitoring/prometheus.yaml
+
+grafana:
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/monitoring/grafana.yaml
+
+# ----------------------------------------------------
+# Mediarr Apps
+# ----------------------------------------------------
+mediarr:
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/mediarr.yaml
+
+qbittorrent:
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/mediarr/qbittorrent.yaml
+
+jellyfin:
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/mediarr/jellyfin.yaml
+
+jellyseerr:
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/mediarr/jellyseerr.yaml
+
+sonarr:
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/mediarr/sonarr.yaml
+
+radarr:
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/mediarr/radarr.yaml
+
+prowlarr:
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/mediarr/prowlarr.yaml
+
+flaresolverr:
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/mediarr/flaresolverr.yaml

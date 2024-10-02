@@ -9,7 +9,7 @@
     - name: Start/Update container
       docker_container:
         name: portainer
-        image: "portainer/portainer-ce:2.13.1"
+        image: portainer/portainer-ce:2.21.2
         pull: yes
         restart_policy: unless-stopped
         env:
@@ -23,7 +23,7 @@
         published_ports:
           - "{{ portainer_port }}:9000"
         volumes:
-          - /var/run/docker.sock:/var/run/docker.sock
+          - "/var/run/docker.sock:/var/run/docker.sock"
           - "/home/{{ ansible_user }}/portainer/:/data"
         log_driver: json-file
         log_options:
@@ -38,7 +38,7 @@
       delay: 10
 
     # ####################################
-    # Clear
+    # Prune
     # ####################################
     - name: Remove old image versions
       docker_prune:

@@ -1,0 +1,98 @@
+- name: Install Grafana
+  hosts: monitoring
+  become: yes
+  serial: 1
+  tasks:
+    # ####################################
+    # Run container
+    # ####################################
+    - name: Create/Update monitoring docker network
+      docker_network:
+        name: monitoring
+        appends: yes
+    - name: Start/Update container
+      when: monitoring.grafana.enabled == true
+      docker_container:
+        name: grafana
+        image: grafana/grafana:11.2.1
+        pull: yes
+        restart_policy: unless-stopped
+        env:
+          TZ: "{{ timezone }}"
+        labels:
+          traefik.http.routers.grafana.service: grafana
+          traefik.http.routers.grafana.rule: "Host(`grafana.{{ local_domain }}`)"
+          traefik.http.routers.grafana.middlewares: ip-whitelist@file
+          traefik.http.routers.grafana.entrypoints: web
+          traefik.http.services.grafana.loadbalancer.server.port: 3000
+        published_ports:
+          - "{{ monitoring.grafana.port }}:3000"
+        volumes:
+          - grafana-storage:/var/lib/grafana
+        networks:
+          - name: monitoring
+            aliases:
+              - grafana
+        log_driver: json-file
+        log_options:
+          max-size: 10m
+          max-file: 3
+
+    - name: Check container health
+      uri:
+        url: http://localhost:{{ monitoring.grafana.port }}/api/health
+      register: result
+      until: result.status == 200
+      retries: 5
+      delay: 10
+
+    # ####################################
+    # Prune
+    # ####################################
+    - name: Remove old image versions
+      docker_prune:
+        images: yes
+        images_filters:
+          dangling: false
+
+    # ####################################
+    # Prepare grafana
+    # ####################################
+    - name: Create prometheus datasource
+      community.grafana.grafana_datasource:
+        name: homelab_prometheus
+        grafana_url: http://localhost:{{ monitoring.grafana.port }}
+        ds_type: prometheus
+        ds_url: http://prometheus:9090
+        access: proxy
+        tls_skip_verify: false
+        is_default: true
+    - name: Create a folder
+      community.grafana.grafana_folder:
+        grafana_url: http://localhost:{{ monitoring.grafana.port }}
+        title: homelab
+        state: present
+    - name: Import Grafana dashboard node-exporter
+      community.grafana.grafana_dashboard:
+        grafana_url: http://localhost:{{ monitoring.grafana.port }}
+        folder: homelab
+        dashboard_id: 1860
+        dashboard_revision: 37
+    - name: Import Grafana dashboard traefik
+      community.grafana.grafana_dashboard:
+        grafana_url: http://localhost:{{ monitoring.grafana.port }}
+        folder: homelab
+        dashboard_id: 17346
+        dashboard_revision: 9
+    - name: Import Grafana dashboard pi-hole
+      community.grafana.grafana_dashboard:
+        grafana_url: http://localhost:{{ monitoring.grafana.port }}
+        folder: homelab
+        dashboard_id: 10176
+        dashboard_revision: 3
+    - name: Import Grafana dashboard radarr
+      community.grafana.grafana_dashboard:
+        grafana_url: http://localhost:{{ monitoring.grafana.port }}
+        folder: homelab
+        dashboard_id: 12896
+        dashboard_revision: 1

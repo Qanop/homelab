@@ -1,0 +1,12 @@
+- import_playbook: mediarr/jellyseerr.yaml
+  when: mediarr.jellyseerr.enabled == true
+- import_playbook: mediarr/sonarr.yaml
+  when: mediarr.sonarr.enabled == true
+- import_playbook: mediarr/radarr.yaml
+  when: mediarr.prowlarr.enabled == true
+- import_playbook: mediarr/prowlarr.yaml
+  when: mediarr.radarr.enabled == true
+- import_playbook: mediarr/jellyfin.yaml
+  when: mediarr.jellyfin.enabled == true
+- import_playbook: mediarr/qbittorrent.yaml
+  when: mediarr.qbittorrent.enabled == true

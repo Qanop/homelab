@@ -1,5 +1,5 @@
 - name: Set and install basic settings
-  hosts: all
+  hosts: rpi
   become: yes
   serial: 1
   tasks:

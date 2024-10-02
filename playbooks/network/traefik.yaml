@@ -18,21 +18,21 @@
     - name: Template dynamic.yml config
       template:
         dest: /home/{{ ansible_user }}/traefik/dynamic.yml
-        src: ../backups-and-confs/traefik/dynamic.j2
+        src: ../backups-and-confs/traefik/dynamic.yml.j2
         mode: 0777
     - name: Template traefik.yml config
       template:
         dest: /home/{{ ansible_user }}/traefik/traefik.yml
-        src: ../backups-and-confs/traefik/traefik.j2
+        src: ../backups-and-confs/traefik/traefik.yml.j2
         mode: 0777
-        
+
     # ####################################
     # Run container
     # ####################################
     - name: Start/Update container
       docker_container:
         name: traefik
-        image: "traefik:v2.6.1"
+        image: traefik:v2.6.1
         pull: yes
         restart_policy: unless-stopped
         labels:
@@ -43,8 +43,19 @@
           traefik.http.services.traefik.loadbalancer.server.port: "8080"
         etc_hosts:
           host.docker.internal: "172.17.0.1"
+        command:
+          - "--metrics.prometheus=true"
+          - "--metrics.prometheus.buckets=0.100000, 0.300000, 1.200000, 5.000000"
+          - "--metrics.prometheus.addEntryPointsLabels=true"
+          - "--metrics.prometheus.addServicesLabels=true"
+          - "--entryPoints.metrics.address=:8899"
+          - "--metrics.prometheus.entryPoint=metrics"
         env:
           TZ: "{{ timezone }}"
+        networks:
+          - name: monitoring
+            aliases:
+              - traefik
         published_ports:
           # The HTTP port
           - "{{ traefik_http }}:80"
@@ -70,7 +81,7 @@
       delay: 10
 
     # ####################################
-    # Clear
+    # Prune
     # ####################################
     - name: Remove old image versions
       docker_prune:

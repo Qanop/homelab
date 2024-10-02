@@ -9,12 +9,12 @@
     - name: Start/Update container
       docker_container:
         name: homeassistant
-        image: "ghcr.io/home-assistant/home-assistant:stable"
+        image: ghcr.io/home-assistant/home-assistant:stable
         pull: yes
         restart_policy: unless-stopped
         privileged: true
         labels:
-          traefik.enable: "true"
+          traefik.enable: true
           traefik.http.routers.homeassistant.service: "homeassistant"
           traefik.http.routers.homeassistant.rule: "Host(`homeassistant.{{ local_domain }}`)"
           traefik.http.routers.homeassistant.middlewares: "ip-whitelist@file"
@@ -32,21 +32,21 @@
           traefik.http.routers.homeassistant-secure.tls: "true"
           traefik.http.routers.homeassistant-secure.tls.certresolver: "master"
           traefik.http.routers.homeassistant-secure.entrypoints: "websecure"
-          
+
         etc_hosts:
           host.docker.internal: "172.17.0.1"
         env:
           TZ: "{{ timezone }}"
         dns_servers:
-          - 127.0.0.1
+          - "127.0.0.1"
           - "{{ static_dns }}"
         network_mode: host
         volumes:
           - "/home/{{ ansible_user }}/homeassistant/:/config"
         log_driver: json-file
         log_options:
-          max-size: "10m"
-          max-file: "5"
+          max-size: 10m
+          max-file: 5
     - name: Check container health
       uri:
         url: http://localhost:{{ home_assistant_port }}
@@ -56,7 +56,7 @@
       delay: 10
 
     # ####################################
-    # Clear
+    # Prune
     # ####################################
     - name: Remove old image versions
       docker_prune:

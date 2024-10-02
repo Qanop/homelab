@@ -1,0 +1,66 @@
+- name: Install Sonarr
+  hosts: mediarr
+  become: yes
+  serial: 1
+  tasks:
+    - import_tasks: mediarr-setup.yaml
+
+    # ####################################
+    # Prepare files
+    # ####################################
+    - name: Create Sonarr config directory
+      file:
+        path:  /home/{{ ansible_user }}/docker_configs/sonarr
+        state: directory
+
+    # ####################################
+    # Run container
+    # ####################################
+    - name: Start/Update Sonarr container
+      when: mediarr.sonarr.enabled == true
+      docker_container:
+        name: sonarr
+        image: lscr.io/linuxserver/sonarr:3.0.8.1507-ls151
+        pull: yes
+        restart_policy: unless-stopped
+        env:
+          TZ: "{{ timezone }}"
+          PUID: "{{ root.user_id }}"
+          PGID: "{{ root.group_id }}"
+        labels:
+          traefik.http.routers.sonarr.service: "sonarr"
+          traefik.http.routers.sonarr.rule: "Host(`sonarr.{{ local_domain }}`)"
+          traefik.http.routers.sonarr.middlewares: "ip-whitelist@file"
+          traefik.http.routers.sonarr.entrypoints: "web"
+          traefik.http.services.sonarr.loadbalancer.server.port: "8989"
+        published_ports:
+          - "{{ mediarr.sonarr.port }}:8989"
+        volumes:
+          - "/home/{{ ansible_user }}/docker_configs/sonarr:/config"
+          - "{{ mediarr.media_tv_path }}:/media/tv"
+          - "{{ mediarr.media_anime_path }}:/media/anime"
+          - "{{ mediarr.downloads_path }}:/downloads"
+        networks:
+          - name: mediarr
+            aliases:
+              - sonarr
+        log_driver: json-file
+        log_options:
+          max-size: "10m"
+          max-file: "5"
+    - name: Check container health
+      uri:
+        url: http://localhost:{{ mediarr.sonarr.port }}
+      register: result
+      until: result.status == 200
+      retries: 10
+      delay: 10
+
+    # ####################################
+    # Prune
+    # ####################################
+    - name: Remove old image versions
+      docker_prune:
+        images: yes
+        images_filters:
+          dangling: false

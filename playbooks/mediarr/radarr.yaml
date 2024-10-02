@@ -1,0 +1,65 @@
+- name: Install Radarr
+  hosts: mediarr
+  become: yes
+  serial: 1
+  tasks:
+    - import_tasks: mediarr-setup.yaml
+
+    # ####################################
+    # Prepare files
+    # ####################################
+    - name: Create Radarr config directory
+      file:
+        path:  /home/{{ ansible_user }}/docker_configs/radarr
+        state: directory
+
+    # ####################################
+    # Run container
+    # ####################################
+    - name: Start/Update Radarr container
+      when: mediarr.radarr.enabled == true
+      docker_container:
+        name: radarr
+        image: linuxserver/radarr:arm32v7-version-4.1.0.6175
+        pull: yes
+        restart_policy: unless-stopped
+        env:
+          TZ: "{{ timezone }}"
+          PUID: "{{ root.user_id }}"
+          PGID: "{{ root.group_id }}"
+        labels:
+          traefik.http.routers.radarr.service: "radarr"
+          traefik.http.routers.radarr.rule: "Host(`radarr.{{ local_domain }}`)"
+          traefik.http.routers.radarr.middlewares: "ip-whitelist@file"
+          traefik.http.routers.radarr.entrypoints: "web"
+          traefik.http.services.radarr.loadbalancer.server.port: "7878"
+        published_ports:
+          - "{{ mediarr.radarr.port }}:7878"
+        volumes:
+          - "/home/{{ ansible_user }}/docker_configs/radarr:/config"
+          - "{{ mediarr.media_movies_path }}:/media/movies"
+          - "{{ mediarr.downloads_path }}:/downloads"
+        networks:
+          - name: mediarr
+            aliases:
+              - radarr
+        log_driver: json-file
+        log_options:
+          max-size: "10m"
+          max-file: "5"
+    - name: Check container health
+      uri:
+        url: http://localhost:{{ mediarr.radarr.port }}
+      register: result
+      until: result.status == 200
+      retries: 10
+      delay: 10
+
+    # ####################################
+    # Prune
+    # ####################################
+    - name: Remove old image versions
+      docker_prune:
+        images: yes
+        images_filters:
+          dangling: false

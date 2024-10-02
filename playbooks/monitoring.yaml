@@ -1,0 +1,4 @@
+- import_playbook: prometheus.yaml
+  when: monitoring.prometheus.enabled == true
+- import_playbook: grafana.yaml
+  when: monitoring.grafana.enabled == true

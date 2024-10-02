@@ -1,0 +1,67 @@
+- name: Install Qbittorrent
+  hosts: mediarr
+  become: yes
+  serial: 1
+  tasks:
+    - import_tasks: mediarr-setup.yaml
+
+    # ####################################
+    # Prepare files
+    # ####################################
+    - name: Create qBitTorrent config directory
+      file:
+        path:  /home/{{ ansible_user }}/docker_configs/qbittorrent
+        state: directory
+
+    # ####################################
+    # Run container
+    # ####################################
+    - name: Start/Update qBitTorrent container
+      when: mediarr.qbittorrent.enabled == true
+      docker_container:
+        name: qbittorrent
+        image: lscr.io/linuxserver/qbittorrent:4.4.5
+        pull: yes
+        restart_policy: unless-stopped
+        env:
+          TZ: "{{ timezone }}"
+          PUID: "{{ root.user_id }}"
+          PGID: "{{ root.group_id }}"
+          WEBUI_PORT: "8090"
+        labels:
+          traefik.http.routers.qbittorrent.service: "qbittorrent"
+          traefik.http.routers.qbittorrent.rule: "Host(`qbittorrent.{{ local_domain }}`)"
+          traefik.http.routers.qbittorrent.middlewares: "ip-whitelist@file"
+          traefik.http.routers.qbittorrent.entrypoints: "web"
+          traefik.http.services.qbittorrent.loadbalancer.server.port: "8090"
+        published_ports:
+          - 6881:6881
+          - 6881:6881/udp
+          - "{{ mediarr.qbittorrent.port }}:8090"
+        volumes:
+          - "/home/{{ ansible_user }}/docker_configs/qbittorrent:/config"
+          - "{{ mediarr.downloads_path }}:/downloads"
+        networks:
+          - name: mediarr
+            aliases:
+              - qbittorrent
+        log_driver: json-file
+        log_options:
+          max-size: "10m"
+          max-file: "5"
+    - name: Check container health
+      uri:
+        url: http://localhost:{{ mediarr.qbittorrent.port }}
+      register: result
+      until: result.status == 200
+      retries: 5
+      delay: 10
+
+    # ####################################
+    # Prune
+    # ####################################
+    - name: Remove old image versions
+      docker_prune:
+        images: yes
+        images_filters:
+          dangling: false

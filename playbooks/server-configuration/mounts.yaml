@@ -1,0 +1,46 @@
+- name: Set and install basic settings
+  hosts: rpi
+  become: yes
+  serial: 1
+  tasks:
+    - name: Create nas rclone directory
+      file:
+        path:  /mnt/nas
+        state: directory
+        mode: 0777
+    - name: Create b2 rclone directory
+      file:
+        path:  /mnt/b2
+        state: directory
+        mode: 0777
+    - name: Mount b2 rclone
+      when: rclone.b2 == true
+      command: "screen -S rclone-b2 -dm rclone mount --allow-other b2: /mnt/b2"
+    - name: Create onedrive rclone directory
+      file:
+        path:  /mnt/onedrive
+        state: directory
+        mode: 0777
+    - name: Mount onedrive rclone
+      when: rclone.onedrive == true
+      command: "screen -S onedrive -dm rclone mount --allow-other onedrive: /mnt/onedrive"
+    - name: Mount NAS
+      when: mounts.nas.enabled == true
+      ansible.posix.mount:
+        src: "{{ mounts.nas.src }}"
+        path: /mnt/nas
+        opts: "rw,vers=3,guest"
+        fstype: cifs
+        state: ephemeral
+    - name: Create m2 rclone directory
+      file:
+        path:  /mnt/m2
+        state: directory
+        mode: 0777
+    - name: Mount M2
+      when: mounts.m2.enabled == true
+      ansible.posix.mount:
+        src: "{{ mounts.m2.src }}"
+        path: /mnt/m2
+        state: mounted
+        fstype: exfat

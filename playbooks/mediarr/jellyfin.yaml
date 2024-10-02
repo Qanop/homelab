@@ -1,0 +1,89 @@
+- name: Install Jellyfin
+  hosts: mediarr
+  become: yes
+  serial: 1
+  tasks:
+    - import_tasks: mediarr-setup.yaml
+
+    # ####################################
+    # Prepare files
+    # ####################################
+    - name: Create Jellyfin config directory
+      file:
+        path: /home/{{ ansible_user }}/docker_configs/jellyfin
+        state: directory
+        mode: 0777
+    - name: Create Jellyfin config directory
+      file:
+        path: /home/{{ ansible_user }}/docker_configs/jellyfin/config
+        state: directory
+        mode: 0777
+    - name: Create Jellyfin cache directory
+      file:
+        path: /home/{{ ansible_user }}/docker_configs/jellyfin/cache
+        state: directory
+        mode: 0777
+
+    # ####################################
+    # Run container
+    # ####################################
+    - name: Start/Update Jellyfin container
+      when: mediarr.jellyfin.enabled == true
+      docker_container:
+        name: jellyfin
+        image: jellyfin/jellyfin:latest
+        pull: yes
+        user: "{{ user.docker_ids }}"
+        restart_policy: unless-stopped
+        env:
+          TZ: "{{ timezone }}"
+          PORT: "5055" #optional
+          LOG_LEVEL: "debug"
+        labels:
+          traefik.http.routers.jellyfin.service: "jellyfin"
+          traefik.http.routers.jellyfin.rule: "Host(`jellyfin.{{ local_domain }}`)"
+          traefik.http.routers.jellyfin.middlewares: "ip-whitelist@file"
+          traefik.http.routers.jellyfin.entrypoints: "web"
+          traefik.http.services.jellyfin.loadbalancer.server.port: "8096"
+        published_ports:
+          - "{{ mediarr.jellyfin.port }}:8096"
+        volumes:
+          - "/home/{{ ansible_user }}/docker_configs/jellyfin/config:/config"
+          - "/home/{{ ansible_user }}/docker_configs/jellyfin/cache:/cache"
+        mounts:
+          - type: bind
+            source: "{{ mediarr.media_movies_path }}"
+            target: /media_movies
+            read_only: true
+          - type: bind
+            source: "{{ mediarr.media_tv_path }}"
+            target: /media_tv
+            read_only: true
+          - type: bind
+            source: "{{ mediarr.media_anime_path }}"
+            target: /media_anime
+            read_only: true
+        networks:
+          - name: mediarr
+            aliases:
+              - jellyfin
+        log_driver: json-file
+        log_options:
+          max-size: "10m"
+          max-file: "5"
+    - name: Check container health
+      uri:
+        url: http://localhost:{{ mediarr.jellyfin.port }}
+      register: result
+      until: result.status == 200
+      retries: 10
+      delay: 10
+
+    # ####################################
+    # Prune
+    # ####################################
+    - name: Remove old image versions
+      docker_prune:
+        images: yes
+        images_filters:
+          dangling: false

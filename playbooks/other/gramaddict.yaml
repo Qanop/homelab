@@ -12,7 +12,7 @@
         path: /home/{{ ansible_user }}/gramaddict
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
-        
+
     # ####################################
     # Install dependencies
     # ####################################
@@ -26,10 +26,10 @@
         install_recommends: yes
 
     # - name: Install GramAddict requirements
-    #   pip: 
+    #   pip:
     #     name: GramAddict
     #     virtualenv: /home/{{ ansible_user }}/gramaddict/.venv
-    # 
+    #
     # - name: Copy config files
     #   copy:
     #     dest: /home/{{ ansible_user }}/gramaddict/app
