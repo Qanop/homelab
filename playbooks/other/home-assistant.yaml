@@ -52,5 +52,5 @@
         url: http://localhost:{{ home_assistant_port }}
       register: result
       until: result.status == 200
-      retries: 5
+      retries: 10
       delay: 10

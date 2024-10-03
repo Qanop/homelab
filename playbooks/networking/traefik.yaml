@@ -77,5 +77,5 @@
         url: http://localhost:{{ networking.traefik.http_ui }}
       register: result
       until: result.status == 200
-      retries: 5
+      retries: 10
       delay: 10
