@@ -1,0 +1,46 @@
+- name: Install Samba
+  hosts: networking
+  become: yes
+  serial: 1
+  tasks:
+    # ####################################
+    # Prepare files
+    # ####################################
+    - name: Create Samba Media directory
+      file:
+        path: "{{ networking.samba.media_path }}"
+        state: directory
+        mode: 0777
+
+    # ####################################
+    # Run container
+    # ####################################
+    - name: Start/Update Samba container
+      when: networking.samba.enabled == true
+      docker_container:
+        name: samba
+        image: ghcr.io/servercontainers/samba
+        pull: yes
+        restart_policy: unless-stopped
+        network_mode: host
+        env:
+          TZ: "{{ timezone }}"
+          MODEL: "TimeCapsule"
+          AVAHI_NAME: "StorageServer"
+          SAMBA_CONF_LOG_LEVEL: "3"
+          GROUP_family: "1500"
+
+          ACCOUNT_homelab: "homelabpass"
+          UID_homelab: "1001"
+          GROUPS_alice: "family"
+
+          SAMBA_VOLUME_CONFIG_media: "[Media]; path=/shares/media; valid users = homelab; guest ok = yes; read only = no; browseable = yes; force group = family"
+        volumes:
+          - "/etc/avahi/services/:/external/avahi"
+
+          # avoid loops when mounting folders to /shares (I'd recommend explicit mapping for each share)
+          - "{{ networking.samba.media_path }}:/shares/media"
+        log_driver: json-file
+        log_options:
+          max-size: "10m"
+          max-file: "5"

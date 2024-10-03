@@ -34,6 +34,11 @@
           traefik.http.routers.qbittorrent.middlewares: "ip-whitelist@file"
           traefik.http.routers.qbittorrent.entrypoints: "web"
           traefik.http.services.qbittorrent.loadbalancer.server.port: "8090"
+          traefik.http.routers.qbit.service: "qbit"
+          traefik.http.routers.qbit.rule: "Host(`qbit.{{ local_domain }}`)"
+          traefik.http.routers.qbit.middlewares: "ip-whitelist@file"
+          traefik.http.routers.qbit.entrypoints: "web"
+          traefik.http.services.qbit.loadbalancer.server.port: "8090"
         published_ports:
           - 6881:6881
           - 6881:6881/udp
@@ -56,12 +61,3 @@
       until: result.status == 200
       retries: 5
       delay: 10
-
-    # ####################################
-    # Prune
-    # ####################################
-    - name: Remove old image versions
-      docker_prune:
-        images: yes
-        images_filters:
-          dangling: false

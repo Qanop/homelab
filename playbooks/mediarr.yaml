@@ -10,3 +10,5 @@
   when: mediarr.jellyfin.enabled == true
 - import_playbook: mediarr/qbittorrent.yaml
   when: mediarr.qbittorrent.enabled == true
+- import_playbook: mediarr/flaresolverr.yaml
+  when: mediarr.flaresolverr.enabled == true

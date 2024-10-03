@@ -1,0 +1,13 @@
+- name: Docker prune
+  hosts: all
+  become: yes
+  serial: 1
+  tasks:
+    # ####################################
+    # Docker Prune
+    # ####################################
+    - name: Remove old image versions
+      docker_prune:
+        images: yes
+        images_filters:
+          dangling: false

@@ -1,8 +1,0 @@
-- import_playbook: portainer.yaml
-  when: network.portainer.enabled == true
-- import_playbook: traefik.yaml
-  when: network.traefik.enabled == true
-- import_playbook: wireguard.yaml
-  when: network.wireguard.enabled == true
-- import_playbook: speedtest-tracker.yaml
-  when: network.speedtest-tracker.enabled == true

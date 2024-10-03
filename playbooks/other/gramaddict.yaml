@@ -1,5 +1,5 @@
 - name: Install Android ADB
-  hosts: all
+  hosts: other
   become: yes
   serial: 1
   tasks:

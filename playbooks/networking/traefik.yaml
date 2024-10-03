@@ -1,5 +1,5 @@
 - name: Install Traefik
-  hosts: all
+  hosts: networking
   become: yes
   serial: 1
   tasks:
@@ -18,12 +18,12 @@
     - name: Template dynamic.yml config
       template:
         dest: /home/{{ ansible_user }}/traefik/dynamic.yml
-        src: ../backups-and-confs/traefik/dynamic.yml.j2
+        src: ../../backups-and-confs/traefik/dynamic.yml.j2
         mode: 0777
     - name: Template traefik.yml config
       template:
         dest: /home/{{ ansible_user }}/traefik/traefik.yml
-        src: ../backups-and-confs/traefik/traefik.yml.j2
+        src: ../../backups-and-confs/traefik/traefik.yml.j2
         mode: 0777
 
     # ####################################
@@ -58,10 +58,10 @@
               - traefik
         published_ports:
           # The HTTP port
-          - "{{ traefik_http }}:80"
-          - "{{ traefik_https }}:443"
+          - "{{ networking.traefik.http }}:80"
+          - "{{ networking.traefik.https }}:443"
           # The Web UI (enabled by --api.insecure=true)
-          - "{{ traefik_http_ui }}:8080"
+          - "{{ networking.traefik.http_ui }}:8080"
         volumes:
           # So that traefik can listen to the Docker events
           - "/var/run/docker.sock:/var/run/docker.sock"
@@ -74,17 +74,8 @@
           max-file: "5"
     - name: Check container health
       uri:
-        url: http://localhost:{{ traefik_http_ui }}
+        url: http://localhost:{{ networking.traefik.http_ui }}
       register: result
       until: result.status == 200
       retries: 5
       delay: 10
-
-    # ####################################
-    # Prune
-    # ####################################
-    - name: Remove old image versions
-      docker_prune:
-        images: yes
-        images_filters:
-          dangling: false

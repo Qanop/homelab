@@ -1,0 +1,56 @@
+- name: Install DashMachine
+  hosts: other
+  become: yes
+  serial: 1
+  tasks:
+    # ####################################
+    # Prepare files
+    # ####################################
+    - name: Create DashMachine directory
+      file:
+        path:  /home/{{ ansible_user }}/docker_configs/dashmachine
+        state: directory
+
+    # ####################################
+    # Run container
+    # ####################################
+    - name: Start/Update DashMachine container
+      when: other.dashmachine.enabled == true
+      docker_container:
+        name: dashmachine
+        image: failed2run/dashmachine:latest
+        pull: yes
+        restart_policy: unless-stopped
+        env:
+          TZ: "{{ timezone }}"
+        labels:
+          traefik.http.routers.dashmachine.service: "dashmachine"
+          traefik.http.routers.dashmachine.rule: "Host(`dashmachine.{{ local_domain }}`)"
+          traefik.http.routers.dashmachine.middlewares: "ip-whitelist@file"
+          traefik.http.routers.dashmachine.entrypoints: "web"
+          traefik.http.services.dashmachine.loadbalancer.server.port: "5000"
+          traefik.http.routers.home.service: "home"
+          traefik.http.routers.home.rule: "Host(`home.{{ local_domain }}`)"
+          traefik.http.routers.home.middlewares: "ip-whitelist@file"
+          traefik.http.routers.home.entrypoints: "web"
+          traefik.http.services.home.loadbalancer.server.port: "5000"
+          traefik.http.routers.homelab.service: "homelab"
+          traefik.http.routers.homelab.rule: "Host(`homelab.{{ local_domain }}`)"
+          traefik.http.routers.homelab.middlewares: "ip-whitelist@file"
+          traefik.http.routers.homelab.entrypoints: "web"
+          traefik.http.services.homelab.loadbalancer.server.port: "5000"
+        published_ports:
+          - "{{ other.dashmachine.port }}:5000"
+        volumes:
+          - "/home/{{ ansible_user }}/docker_configs/dashmachine:/dashmachine/dashmachine/user_data"
+        log_driver: json-file
+        log_options:
+          max-size: "10m"
+          max-file: "5"
+    - name: Check container health
+      uri:
+        url: http://localhost:{{ other.dashmachine.port }}
+      register: result
+      until: result.status == 200
+      retries: 10
+      delay: 10

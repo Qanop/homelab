@@ -2,19 +2,25 @@ all:
   hosts:
     rpi:
       ansible_host: 192.168.1.33
-      priority: 101
+      priority: 110
+    networking:
+      ansible_host: 192.168.1.33
+      priority: 80
+    mediarr:
+      ansible_host: 192.168.1.33
+      priority: 90
     monitoring:
       ansible_host: 192.168.1.33
       priority: 100
-    mediarr:
+    other:
       ansible_host: 192.168.1.33
-      priority: 99
+      priority: 120
   vars:
     ansible_user: pi
     ansible_password: raspberry # only used on first run
     ansible_python_interpreter: /usr/bin/python3
     timezone: "Europe/Berlin"
-    rpi_swap_size: 2048
+    rpi_swap_size: 4096
     rpi_swap_reboot: no # change for first time settings
 
     # PiHole Options
@@ -71,6 +77,11 @@ all:
         enabled: true
         port: 8090
 
+    other:
+      dashmachine:
+        enabled: true
+        port: 8150
+
     mounts:
       nas:
         enabled: false
@@ -83,7 +94,12 @@ all:
       b2: true
       onedrive: false
 
-    network:
+    networking:
+      cidr: 192.168.1.0/24
+      samba:
+        enabled: true
+        media_path: /mnt/m2/homelab/media
+        photography_path: /mnt/m2/homelab/photography
       portainer:
         enabled: true
         port: 8600
@@ -92,7 +108,7 @@ all:
         http: 80
         https: 443
         http_ui: 8080
-      pihole:
+      wireguard:
         enabled: false
       speedtest:
         enabled: false

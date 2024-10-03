@@ -47,15 +47,6 @@
       delay: 10
 
     # ####################################
-    # Prune
-    # ####################################
-    - name: Remove old image versions
-      docker_prune:
-        images: yes
-        images_filters:
-          dangling: false
-
-    # ####################################
     # Prepare grafana
     # ####################################
     - name: Create prometheus datasource

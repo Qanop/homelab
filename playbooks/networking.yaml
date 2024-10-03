@@ -1,0 +1,10 @@
+- import_playbook: portainer.yaml
+  when: networking.portainer.enabled == true
+- import_playbook: traefik.yaml
+  when: networking.traefik.enabled == true
+- import_playbook: samba.yaml
+  when: networking.samba.enabled == true
+- import_playbook: wireguard.yaml
+  when: networking.wireguard.enabled == true
+- import_playbook: speedtest-tracker.yaml
+  when: networking.speedtest-tracker.enabled == true

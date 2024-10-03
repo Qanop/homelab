@@ -6,9 +6,7 @@ all:
     server_routers_ip: "192.168.1.1"
     server_cidr: "192.168.1.0/24"
     public_wildcard: "your.domain"
-    shlink_public_fqdn: "shlink.your.domain"
-    scrumpoker_public_fqdn: "scrumpoker.your.domain"
-    local_domain: "lc"
+    local_domain: "lan"
 
     # PiHole Options
     pihole_webpassword: "mypass"

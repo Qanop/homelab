@@ -1,5 +1,5 @@
 - name: Install Speedtest
-  hosts: all
+  hosts: networking
   become: yes
   serial: 1
   tasks:
@@ -32,12 +32,3 @@
         log_options:
           max-size: "10m"
           max-file: "5"
-
-    # ####################################
-    # Prune
-    # ####################################
-    - name: Remove old image versions
-      docker_prune:
-        images: yes
-        images_filters:
-          dangling: false

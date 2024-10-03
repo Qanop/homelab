@@ -12,15 +12,17 @@ dependencies-system-debian:
 dependencies-system-macos:
 	brew install sshpass
 
-
 # ----------------------------------------------------
 # Run ansible PiHole playbooks
 # ----------------------------------------------------
 pihole-bootstrap: # set basic settings for new instance of raspberry
-	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/ansible-pihole/bootstrap-pihole.yaml
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/pihole/bootstrap-pihole.yaml
 
 pihole-update: # update apt packages and pihole
-	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/ansible-pihole/update-pihole.yaml
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/pihole/update-pihole.yaml
+
+pihole-docker: # only rerun docker pihole
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/pihole/docker-pihole.yaml
 
 # ----------------------------------------------------
 # Run ansible Pi Basic Installs and Settings playbooks
@@ -32,35 +34,40 @@ pi-mounts:
 	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/server-configuration/mounts.yaml
 
 # ----------------------------------------------------
-# Apps
+# Other
 # ----------------------------------------------------
+docker-prune:
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/other/docker-prune.yaml
 
 gramaddict:
 	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/other/gramaddict.yaml
 
-# ----------------------------------------------------
-# Automation Apps
-# ----------------------------------------------------
+dashmachine:
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/other/dashmachine.yaml
+
 home-assistant:
 	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/automation/home-assistant.yaml
 
 # ----------------------------------------------------
-# Network Apps
+# Networking Apps
 # ----------------------------------------------------
-network:
-	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/network.yaml
+networking:
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/networking.yaml
 
 portainer:
-	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/network/portainer.yaml
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/networking/portainer.yaml
 
 speedtest-tracker:
-	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/network/speedtest-tracker.yaml
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/networking/speedtest-tracker.yaml
 
 traefik:
-	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/network/traefik.yaml
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/networking/traefik.yaml
 
 wireguard:
-	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/network/wireguard.yaml
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/networking/wireguard.yaml
+
+samba:
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/networking/samba.yaml
 
 # ----------------------------------------------------
 # Monitoring Apps

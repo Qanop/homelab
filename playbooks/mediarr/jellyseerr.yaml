@@ -51,12 +51,3 @@
       until: result.status == 200
       retries: 5
       delay: 10
-
-    # ####################################
-    # Prune
-    # ####################################
-    - name: Remove old image versions
-      docker_prune:
-        images: yes
-        images_filters:
-          dangling: false

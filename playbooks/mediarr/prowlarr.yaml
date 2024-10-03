@@ -27,6 +27,7 @@
           TZ: "{{ timezone }}"
           PUID: "{{ user.user_id }}"
           PGID: "{{ user.group_id }}"
+          FIREWALL_OUTBOUND_SUBNETS: "{{ networking.cidr }}"
         labels:
           traefik.http.routers.prowlarr.service: "prowlarr"
           traefik.http.routers.prowlarr.rule: "Host(`prowlarr.{{ local_domain }}`)"
@@ -52,12 +53,3 @@
       until: result.status == 200
       retries: 10
       delay: 10
-
-    # ####################################
-    # Prune
-    # ####################################
-    - name: Remove old image versions
-      docker_prune:
-        images: yes
-        images_filters:
-          dangling: false
