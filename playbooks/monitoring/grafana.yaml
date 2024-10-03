@@ -6,11 +6,11 @@
     # ####################################
     # Run container
     # ####################################
-    - name: Create/Update monitoring docker network
+    - name: Create/Update Grafana Monitoring docker network
       docker_network:
         name: monitoring
         appends: yes
-    - name: Start/Update container
+    - name: Start/Update Grafana Monitoring  container
       when: monitoring.grafana.enabled == true
       docker_container:
         name: grafana
@@ -20,11 +20,11 @@
         env:
           TZ: "{{ timezone }}"
         labels:
-          traefik.http.routers.grafana.service: grafana
+          traefik.http.routers.grafana.service: "grafana"
           traefik.http.routers.grafana.rule: "Host(`grafana.{{ local_domain }}`)"
-          traefik.http.routers.grafana.middlewares: ip-whitelist@file
-          traefik.http.routers.grafana.entrypoints: web
-          traefik.http.services.grafana.loadbalancer.server.port: 3000
+          traefik.http.routers.grafana.middlewares: "ip-whitelist@file"
+          traefik.http.routers.grafana.entrypoints: "web"
+          traefik.http.services.grafana.loadbalancer.server.port: "3000"
         published_ports:
           - "{{ monitoring.grafana.port }}:3000"
         volumes:
@@ -35,10 +35,10 @@
               - grafana
         log_driver: json-file
         log_options:
-          max-size: 10m
-          max-file: 3
+          max-size: "10m"
+          max-file: "3"
 
-    - name: Check container health
+    - name: Check Grafana Monitoring  container health
       uri:
         url: http://localhost:{{ monitoring.grafana.port }}/api/health
       register: result
@@ -49,7 +49,7 @@
     # ####################################
     # Prepare grafana
     # ####################################
-    - name: Create prometheus datasource
+    - name: Create Grafana prometheus datasource
       community.grafana.grafana_datasource:
         name: homelab_prometheus
         grafana_url: http://localhost:{{ monitoring.grafana.port }}
@@ -58,7 +58,7 @@
         access: proxy
         tls_skip_verify: false
         is_default: true
-    - name: Create a folder
+    - name: Create a Grafana folder
       community.grafana.grafana_folder:
         grafana_url: http://localhost:{{ monitoring.grafana.port }}
         title: homelab

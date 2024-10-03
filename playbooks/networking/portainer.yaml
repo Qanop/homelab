@@ -21,7 +21,7 @@
           traefik.http.routers.portainer.entrypoints: "web"
           traefik.http.services.portainer.loadbalancer.server.port: "9000"
         published_ports:
-          - "{{ portainer_port }}:9000"
+          - "{{ networking.portainer.port }}:9000"
         volumes:
           - "/var/run/docker.sock:/var/run/docker.sock"
           - "/home/{{ ansible_user }}/portainer/:/data"
@@ -31,7 +31,7 @@
           max-file: "5"
     - name: Check container health
       uri:
-        url: http://localhost:{{ portainer_port }}
+        url: http://localhost:{{ networking.portainer.port }}
       register: result
       until: result.status == 200
       retries: 10

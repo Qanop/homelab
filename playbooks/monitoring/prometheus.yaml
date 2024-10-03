@@ -13,17 +13,17 @@
     - name: Template prometheus.yml config
       template:
         dest: /home/{{ ansible_user }}/docker_configs/prometheus/prometheus.yml
-        src: ../backups-and-confs/prometheus/prometheus.yml.j2
+        src: ../../backups-and-confs/prometheus/prometheus.yml.j2
         mode: 0777
 
     # ####################################
     # Run container
     # ####################################
-    - name: Create/Update monitoring docker network
+    - name: Create/Update Prometheus Monitoring docker network
       docker_network:
         name: monitoring
         appends: yes
-    - name: Start/Update container
+    - name: Start/Update Prometheus Monitoring container
       when: monitoring.prometheus.enabled == true
       docker_container:
         name: prometheus
@@ -63,7 +63,7 @@
           max-size: "10m"
           max-file: "3"
 
-    - name: Check container health
+    - name: Check Prometheus Monitoring container health
       uri:
         url: http://localhost:{{ monitoring.prometheus.port }}/-/healthy
       register: result
@@ -95,10 +95,10 @@
         exposed_ports:
           - "9100"
         volumes:
-          - /proc:/host/proc:ro
-          - /sys:/host/sys:ro
-          - /:/rootfs:ro
+          - "/proc:/host/proc:ro"
+          - "/sys:/host/sys:ro"
+          - "/:/rootfs:ro"
         log_driver: json-file
         log_options:
-          max-size: 10m
-          max-file: 3
+          max-size: "10m"
+          max-file: "3"

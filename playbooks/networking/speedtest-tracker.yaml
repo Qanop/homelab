@@ -25,7 +25,7 @@
           - 127.0.0.1
           - "{{ static_dns }}"
         published_ports:
-          - "{{ speedtest_port }}:80"
+          - "{{ networking.speedtest-tracker.port }}:80"
         volumes:
           - "/home/{{ ansible_user }}/speedtest/:/config"
         log_driver: json-file
