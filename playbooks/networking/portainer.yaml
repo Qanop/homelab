@@ -3,10 +3,12 @@
   become: yes
   serial: 1
   tasks:
+    - import_tasks: networking-setup.yaml
+
     # ####################################
     # Run container
     # ####################################
-    - name: Start/Update container
+    - name: Start/Update Portainer container
       docker_container:
         name: portainer
         image: portainer/portainer-ce:2.21.2
@@ -15,6 +17,7 @@
         env:
           TZ: "{{ timezone }}"
         labels:
+          traefik.docker.network:
           traefik.http.routers.portainer.service: "portainer"
           traefik.http.routers.portainer.rule: "Host(`portainer.{{ local_domain }}`)"
           traefik.http.routers.portainer.middlewares: "ip-whitelist@file"
@@ -25,11 +28,15 @@
         volumes:
           - "/var/run/docker.sock:/var/run/docker.sock"
           - "/home/{{ ansible_user }}/portainer/:/data"
+        networks:
+          - name: networking
+            aliases:
+              - portainer
         log_driver: json-file
         log_options:
           max-size: "10m"
           max-file: "5"
-    - name: Check container health
+    - name: Check Portainer container health
       uri:
         url: http://localhost:{{ networking.portainer.port }}
       register: result

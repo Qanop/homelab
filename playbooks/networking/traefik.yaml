@@ -3,24 +3,26 @@
   become: yes
   serial: 1
   tasks:
+    - import_tasks: networking-setup.yaml
+
     # ####################################
     # Configuration files
     # ####################################
-    - name: Create config directory
+    - name: Create Traefik config directory
       file:
         path:  /home/{{ ansible_user }}/traefik
         state: directory
-    - name: Create acme.json
+    - name: Create Traefik acme.json
       file:
         path: /home/{{ ansible_user }}/traefik/acme.json
         state: touch
         mode: 0600
-    - name: Template dynamic.yml config
+    - name: Template Traefik dynamic.yml config
       template:
         dest: /home/{{ ansible_user }}/traefik/dynamic.yml
         src: ../../backups-and-confs/traefik/dynamic.yml.j2
         mode: 0777
-    - name: Template traefik.yml config
+    - name: Templat Traefike traefik.yml config
       template:
         dest: /home/{{ ansible_user }}/traefik/traefik.yml
         src: ../../backups-and-confs/traefik/traefik.yml.j2
@@ -29,13 +31,14 @@
     # ####################################
     # Run container
     # ####################################
-    - name: Start/Update container
+    - name: Start/Update Traefik container
       docker_container:
         name: traefik
         image: traefik:v2.6.1
         pull: yes
         restart_policy: unless-stopped
         labels:
+          traefik.docker.network: "networking"
           traefik.http.routers.traefik.service: "traefik"
           traefik.http.routers.traefik.rule: "Host(`traefik.{{ local_domain }}`)"
           traefik.http.routers.traefik.middlewares: "ip-whitelist@file"
@@ -56,6 +59,13 @@
           - name: monitoring
             aliases:
               - traefik
+          - name: mediarr
+            aliases:
+              - traefik
+          - name: networking
+            aliases:
+              - traefik
+          - name: bridge
         published_ports:
           # The HTTP port
           - "{{ networking.traefik.http }}:80"
@@ -72,7 +82,7 @@
         log_options:
           max-size: "10m"
           max-file: "5"
-    - name: Check container health
+    - name: Check Traefik container health
       uri:
         url: http://localhost:{{ networking.traefik.http_ui }}
       register: result

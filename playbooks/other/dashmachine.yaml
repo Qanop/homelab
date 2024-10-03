@@ -3,6 +3,8 @@
   become: yes
   serial: 1
   tasks:
+    - import_tasks: ../networking/networking-setup.yaml
+
     # ####################################
     # Prepare files
     # ####################################
@@ -43,6 +45,12 @@
           - "{{ other.dashmachine.port }}:5000"
         volumes:
           - "/home/{{ ansible_user }}/docker_configs/dashmachine:/dashmachine/dashmachine/user_data"
+        networks:
+          - name: networking
+            aliases:
+              - dashmachine
+              - homelab
+              - home
         log_driver: json-file
         log_options:
           max-size: "10m"

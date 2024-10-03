@@ -3,10 +3,12 @@
   become: yes
   serial: 1
   tasks:
+    - import_tasks: networking-setup.yaml
+
     # ####################################
     # Run container
     # ####################################
-    - name: Start/Update container
+    - name: Start/Update WireGuard container
       docker_container:
         name: wireguard
         image: linuxserver/wireguard
@@ -30,6 +32,10 @@
           net.ipv4.conf.all.src_valid_mark: "1"
         published_ports:
           - "51820:51820/udp"
+        networks:
+          - name: networking
+            aliases:
+              - wireguard
         volumes:
           - "/home/{{ ansible_user }}/wireguard:/config"
           - /lib/modules:/lib/modules

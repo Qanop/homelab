@@ -50,6 +50,7 @@
           - name: mediarr
             aliases:
               - qbittorrent
+              - qbit
         log_driver: json-file
         log_options:
           max-size: "10m"

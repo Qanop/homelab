@@ -3,10 +3,12 @@
   become: yes
   serial: 1
   tasks:
+    - import_tasks: networking-setup.yaml
+
     # ####################################
     # Run container
     # ####################################
-    - name: Start/Update container
+    - name: Start/Update Speedtest Tracker container
       docker_container:
         name: speedtest
         image: henrywhitaker3/speedtest-tracker:latest-arm
@@ -25,9 +27,13 @@
           - 127.0.0.1
           - "{{ static_dns }}"
         published_ports:
-          - "{{ networking.speedtest-tracker.port }}:80"
+          - "{{ networking.speedtesttracker.port }}:80"
         volumes:
           - "/home/{{ ansible_user }}/speedtest/:/config"
+        networks:
+          - name: networking
+            aliases:
+              - speedtesttracker
         log_driver: json-file
         log_options:
           max-size: "10m"

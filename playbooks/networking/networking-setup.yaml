@@ -1,0 +1,15 @@
+# ####################################
+# Prepare Mediarr docker network
+# ####################################
+- name: Create/Update networking docker network
+  docker_network:
+    name: networking
+    appends: yes
+- name: Create/Update monitoring docker network
+  docker_network:
+    name: monitoring
+    appends: yes
+- name: Create/Update mediarr docker network
+  docker_network:
+    name: mediarr
+    appends: yes

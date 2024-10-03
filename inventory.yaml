@@ -110,7 +110,7 @@ all:
         http_ui: 8080
       wireguard:
         enabled: false
-      speedtest-tracker:
+      speedtesttracker:
         enabled: false
         port: 8700
 
