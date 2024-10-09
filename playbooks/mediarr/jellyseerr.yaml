@@ -34,7 +34,6 @@
         published_ports:
           - "{{ mediarr.jellyseerr.port }}:5055"
         volumes:
-          - "/var/run/docker.sock:/var/run/docker.sock"
           - "/home/{{ ansible_user }}/docker_configs/jellyseerr:/app/config"
         networks:
           - name: mediarr

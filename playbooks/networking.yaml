@@ -4,6 +4,8 @@
   when: networking.traefik.enabled == true
 - import_playbook: networking/samba.yaml
   when: networking.samba.enabled == true
+- import_playbook: networking/nfs-server.yaml
+  when: networking.nfsserver.enabled == true
 - import_playbook: networking/wireguard.yaml
   when: networking.wireguard.enabled == true
 - import_playbook: networking/speedtest-tracker.yaml

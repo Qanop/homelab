@@ -6,4 +6,5 @@
 # Project files
 # ####################################
 backups-and-confs/gramaddict
+backups-and-confs/backups
 inventory-secure.yaml

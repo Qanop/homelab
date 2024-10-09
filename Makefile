@@ -69,6 +69,9 @@ wireguard:
 samba:
 	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/networking/samba.yaml
 
+nfs-server:
+	ansible-playbook -i inventory.yaml -i inventory-secure.yaml playbooks/networking/nfs-server.yaml
+
 # ----------------------------------------------------
 # Monitoring Apps
 # ----------------------------------------------------

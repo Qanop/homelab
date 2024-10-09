@@ -23,6 +23,7 @@
         pull: yes
         restart_policy: unless-stopped
         network_mode: host
+        privileged: true
         env:
           TZ: "{{ timezone }}"
           MODEL: "TimeCapsule"
@@ -34,12 +35,16 @@
           UID_homelab: "1001"
           GROUPS_alice: "family"
 
-          SAMBA_VOLUME_CONFIG_media: "[Media]; path=/shares/media; valid users = homelab; guest ok = yes; read only = no; browseable = yes; force group = family"
+          SAMBA_VOLUME_CONFIG_media: "[Media]; path=/shares/media; force user = root; guest ok = yes; writeable = yes; browseable = yes; public = yes"
+          SAMBA_VOLUME_CONFIG_downloads: "[Downloads]; path=/shares/downloads; force user = root; guest ok = yes; writeable = yes; browseable = yes; public = yes"
+          SAMBA_VOLUME_CONFIG_photography: "[Photography]; path=/shares/photography; force user = root; guest ok = yes; writeable = yes; browseable = yes; public = yes"
         volumes:
           - "/etc/avahi/services/:/external/avahi"
 
           # avoid loops when mounting folders to /shares (I'd recommend explicit mapping for each share)
           - "{{ networking.samba.media_path }}:/shares/media"
+          - "{{ networking.samba.downloads_path }}:/shares/downloads"
+          - "{{ networking.samba.photography_path }}:/shares/photography"
         log_driver: json-file
         log_options:
           max-size: "10m"
