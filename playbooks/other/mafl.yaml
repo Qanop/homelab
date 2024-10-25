@@ -1,0 +1,11 @@
+- name: Mafl
+  hosts: common_webs
+  become: yes
+  tasks:
+    # ####################################
+    # Prepare files
+    # ####################################
+    - name: Template mafl.yml config
+      template:
+        dest: /configs/mafl/config.yml
+        src: ../../backups-and-confs/mafl/config.yml.j2

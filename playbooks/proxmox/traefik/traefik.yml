@@ -1,0 +1,11 @@
+- name: Traefik
+  hosts: traefik
+  become: yes
+  tasks:
+    # ####################################
+    # Prepare files
+    # ####################################
+    - name: Template traefik.yml config
+      template:
+        dest: traefik/data/config.yml
+        src: config.yml.j2

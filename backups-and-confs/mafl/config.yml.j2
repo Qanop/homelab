@@ -1,0 +1,80 @@
+title: Mek's HomeLab
+lang: en
+theme: bluer
+checkUpdates: true
+layout:
+  grid:
+    small: 2
+    medium: 3
+    large: 4
+    xlarge: 5
+
+# ----------------------------------------------------
+# Tags
+# Values: red, orange, amber, yellow, lime, green,
+#         emerald, teal, cyan, sky, blue, indigo,
+#         violet, purple, fuchsia, pink, rose
+# ----------------------------------------------------
+tags:
+  - name: rPi
+    color: red
+  - name: LXC
+    color: amber
+  - name: Docker
+    color: sky
+  - name: VM
+    color: teal
+  - name: Server
+    color: lime
+
+# ----------------------------------------------------
+# Home
+# ----------------------------------------------------
+services:
+  Common:
+    - title: Gmail
+      link: https://gmail.com
+      icon:
+        name: logos:google-gmail
+    - title: Google Calendar
+      link: https://calendar.google.com/
+      icon:
+        name: logos:google-calendar
+    - title: YouTube
+      link: https://youtube.com/
+      icon:
+        name: logos:youtube-icon
+    - title: Facebook
+      link: https://www.facebook.com/
+      icon:
+        name: logos:facebook
+    - title: Messenger
+      link: https://www.messenger.com/
+      icon:
+        name: logos:messenger
+{% for k_group, v_group in http_app_groups.items() %}
+
+  # ----------------------------------------------------
+  # {{ v_group.name }}
+  # ----------------------------------------------------
+  {{ v_group.name }}:
+{% for k_app, v_app in v_group.apps.items() %}
+{% if v_app.name is defined %}
+    - title: {{ v_app.name }}
+{% else %}
+    - title: {{ k_app[0]|upper}}{{k_app[1:] }}
+{% endif %}
+      link: https://{{ v_app.proxy_host }}
+{% if v_app.description is defined %}
+      description: {{ v_app.description }}
+{% endif %}
+      icon:
+        name: {{ v_app.icon.name }}
+        wrap: true
+        color: '{{ v_app.icon.color }}'
+      tags:
+{% for tag in v_app.tags %}
+        - {{ tag}}
+{% endfor %}
+{% endfor %}
+{% endfor %}
