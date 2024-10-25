@@ -58,7 +58,7 @@ services:
   # {{ v_group.name }}
   # ----------------------------------------------------
   {{ v_group.name }}:
-{% for k_app, v_app in v_group.apps.items() %}
+{% for k_app, v_app in v_group.apps.items() if v_app.skip_dashboard is not defined %}
 {% if v_app.name is defined %}
     - title: {{ v_app.name }}
 {% else %}

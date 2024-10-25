@@ -4,7 +4,7 @@ http:
   # ----------------------------------------------------
   # Routers {{ v_group.name }}
   # ----------------------------------------------------
-{% for k_app, v_app in v_group.apps.items() %}
+{% for k_app, v_app in v_group.apps.items() if v_app.skip_traefik is not defined %}
     {{ k_app }}:
       rule: "Host(`{{ v_app.proxy_host }}`)"
       service: {{ k_app }}
@@ -23,7 +23,7 @@ http:
 # ----------------------------------------------------
   services:
 {% for k_group, v_group in http_app_groups.items() %}
-{% for k_app, v_app in v_group.apps.items() %}
+{% for k_app, v_app in v_group.apps.items() if v_app.skip_traefik is not defined  %}
     {{ k_app }}:
       loadBalancer:
         passHostHeader: true
